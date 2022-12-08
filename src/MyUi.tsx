@@ -11,10 +11,10 @@ import { useDemoData } from '@mui/x-data-grid-generator';
 import { Slider, SliderProps } from '@mui/material';
 
 function RatingInputValue(props: GridFilterInputValueProps) {
+  const [value1, setValue1] = React.useState<number[]>([20, 37]);
   const { item, applyValue, focusElementRef } = props;
-  console.log(Number(item.value));
-
-  const ratingRef: React.Ref<any> = React.useRef(null);
+  const minDistance = 10;
+  // const ratingRef: React.Ref<any> = React.useRef(null);
   // React.useImperativeHandle(focusElementRef, () => ({
   //   focus: () => {
   //     ratingRef.current
@@ -24,7 +24,24 @@ function RatingInputValue(props: GridFilterInputValueProps) {
   // }));
 
 
-  const handleFilterChange: SliderProps['onChange'] = (event: Event, newValue: number | number[]) => {
+  const handleFilterChange: SliderProps['onChange'] = (event: Event, newValue: number | number[], activeThumb: number) => {
+
+
+    if (!Array.isArray(newValue)) {
+      return;
+    }
+
+    if (newValue[1] - newValue[0] < minDistance) {
+      if (activeThumb === 0) {
+        const clamped = Math.min(newValue[0], 100 - minDistance);
+        setValue1([clamped, clamped + minDistance]);
+      } else {
+        const clamped = Math.max(newValue[1], minDistance);
+        setValue1([clamped - minDistance, clamped]);
+      }
+    } else {
+      setValue1(newValue as number[]);
+    }
     applyValue({ ...item, value: newValue });
 
   };
@@ -41,20 +58,14 @@ function RatingInputValue(props: GridFilterInputValueProps) {
     >
       <Slider
         size="small"
+        // ref={ratingRef}
         placeholder="Filter value"
         valueLabelDisplay="auto"
-        // value={Number(item.value)}
-        defaultValue={70}
+        value={value1}
+        min={10}
         onChange={handleFilterChange}
       />
-      {/* <Rating
-        // name="custom-rating-filter-operator"
-        placeholder="Filter value"
-        value={Number(item.value)}
-        onChange={handleFilterChange}
-        precision={0.5}
-        ref={ratingRef}
-      /> */}
+
     </Box>
   );
 }
@@ -64,7 +75,7 @@ const ratingOnlyOperators: GridFilterOperator[] = [
     label: 'Above',
     value: 'above',
     getApplyFilterFn: (filterItem: GridFilterItem) => {
-      console.log(filterItem);
+
 
       if (
         !filterItem.columnField ||
@@ -75,49 +86,80 @@ const ratingOnlyOperators: GridFilterOperator[] = [
       }
 
       return (params): boolean => {
-        return Number(params.value) >= Number(filterItem.value);
+
+        return Number(params.value) > Number(filterItem.value[0]) && Number(params.value) < Number(filterItem.value[1]);
       };
     },
     InputComponent: RatingInputValue,
-    InputComponentProps: { type: 'number' },
+    InputComponentProps: { type: 'number', 'max': 120 },
   },
 ];
 
-const VISIBLE_FIELDS = ['name', 'rating', 'country', 'dateCreated', 'isAdmin'];
 
 export default function MyUi() {
-  const { data } = useDemoData({
-    dataSet: 'Employee',
-    visibleFields: VISIBLE_FIELDS,
-    rowLength: 100,
-  });
+
+  let minValue: number = 0;
+  let maxValue: number = 0;
+
+  const [value1, setValue1] = React.useState<number[]>([20, 37]);
+
+  const fakeColumns = [
+    { field: "id", headerName: "ID", width: 70 },
+    { field: "firstName", headerName: "First name", width: 130 },
+    { field: "lastName", headerName: "Last name", width: 130 },
+    {
+      field: "age",
+      headerName: "Age",
+      type: "number",
+      width: 90
+    }
+  ];
+
+  const rows = [
+    { id: 1, lastName: "Snow", firstName: "Jon", age: 35 },
+    { id: 2, lastName: "Lannister", firstName: "Cersei", age: 42 },
+    { id: 3, lastName: "Lannister", firstName: "Jaime", age: 45 },
+    { id: 4, lastName: "Stark", firstName: "Arya", age: 16 },
+    { id: 5, lastName: "Targaryen", firstName: "Daenerys", age: null },
+    { id: 6, lastName: "Melisandre", firstName: null, age: 150 },
+    { id: 7, lastName: "Clifford", firstName: "Ferrara", age: 44 },
+    { id: 8, lastName: "Frances", firstName: "Rossini", age: 36 },
+    { id: 9, lastName: "Roxie", firstName: "Harvey", age: 65 }
+  ];
+
+
+  rows.map((row) => {
+    if (row.age !== null) {
+
+    }
+
+  })
 
   const columns = React.useMemo(
     () =>
-      data.columns.map((col) =>
-        col.field === 'rating'
+      fakeColumns.map((col) =>
+        col.field === 'age'
           ? {
             ...col,
             filterOperators: ratingOnlyOperators,
           }
           : col,
       ),
-    [data.columns],
+    [fakeColumns],
   );
 
   return (
     <div style={{ height: 400, width: '100%' }}>
       <DataGrid
-        {...data}
+        rows={rows}
         columns={columns}
         initialState={{
-          ...data.initialState,
           filter: {
             filterModel: {
               items: [
                 {
                   id: 1,
-                  columnField: 'rating',
+                  columnField: 'age',
                   value: '3',
                   operatorValue: 'above',
                 },
