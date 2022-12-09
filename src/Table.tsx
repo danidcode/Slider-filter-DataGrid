@@ -10,7 +10,7 @@ export default function Table() {
 
   const [maxValue, setMaxValue] = React.useState<number>(0);
   const [minValue, setMinValue] = React.useState<number>(0);
-  const [value1, setValue1] = React.useState<number[]>([minValue || 0, maxValue || 0]);
+  const [sliderValue, setSliderValue] = React.useState<number[]>([minValue || 0, maxValue || 0]);
   const rangeOnlyOperators: GridFilterOperator[] = [
     {
       label: 'Above',
@@ -26,13 +26,12 @@ export default function Table() {
         }
 
         return (params): boolean => {
-          console.log(filterItem.value);
 
           return Number(params.value) >= Number(filterItem.value[0]) && Number(params.value) <= Number(filterItem.value[1]);
         };
       },
       InputComponent: RangeInputValue,
-      InputComponentProps: { type: 'number', 'minValue': minValue, 'maxValue': maxValue, 'value1': value1, 'setValue1': setValue1 },
+      InputComponentProps: { type: 'number', 'minValue': minValue, 'maxValue': maxValue, 'sliderValue': sliderValue, 'setSliderValue': setSliderValue },
     },
   ];
 
@@ -72,7 +71,7 @@ export default function Table() {
   React.useEffect(() => {
     setMinValue(min);
     setMaxValue(max);
-    setValue1([min, max])
+    setSliderValue([min, max])
   }, [])
 
   const columns = React.useMemo(

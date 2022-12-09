@@ -5,7 +5,7 @@ import { GridFilterInputValueProps } from '@mui/x-data-grid';
 import * as React from 'react';
 
 export default function RangeInputValue(props: GridFilterInputValueProps) {
-    const { item, applyValue, focusElementRef, minValue, maxValue, value1, setValue1 } = props;
+    const { item, applyValue, focusElementRef, minValue, maxValue, sliderValue, setSliderValue } = props;
 
     const minDistance = 10;
     const rangeRef: React.Ref<any> = React.useRef(null);
@@ -27,13 +27,13 @@ export default function RangeInputValue(props: GridFilterInputValueProps) {
         if (newValue[1] - newValue[0] < minDistance) {
             if (activeThumb === 0) {
                 const clamped = Math.min(newValue[0], 100 - minDistance);
-                setValue1([clamped, clamped + minDistance]);
+                setSliderValue([clamped, clamped + minDistance]);
             } else {
                 const clamped = Math.max(newValue[1], minDistance);
-                setValue1([clamped - minDistance, clamped]);
+                setSliderValue([clamped - minDistance, clamped]);
             }
         } else {
-            setValue1(newValue as number[]);
+            setSliderValue(newValue as number[]);
         }
         applyValue({ ...item, value: newValue });
 
@@ -53,13 +53,13 @@ export default function RangeInputValue(props: GridFilterInputValueProps) {
                 size="small"
                 ref={rangeRef}
                 placeholder="Filter value"
-                value={value1}
+                value={sliderValue}
                 min={minValue}
                 max={maxValue}
                 onChange={handleFilterChange}
             />
             <Box >
-                {value1[0]} - {value1[1]}
+                {sliderValue[0]} - {sliderValue[1]}
             </Box>
 
         </Box>
