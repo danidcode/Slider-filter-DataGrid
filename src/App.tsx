@@ -1,13 +1,13 @@
 import React from 'react';
 import logo from './logo.svg';
 import './App.css';
-import MyUI from './MyUi';
+import Table from './Table';
 
 function App() {
   return (
     <><header>
       <meta name="viewport" content="initial-scale=1, width=device-width" />
-    </header><MyUI></MyUI></>
+    </header><Table></Table></>
   );
 }
 

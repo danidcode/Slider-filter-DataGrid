@@ -1,85 +1,17 @@
 import * as React from 'react';
-import Box from '@mui/material/Box';
-import Rating, { RatingProps } from '@mui/material/Rating';
 import {
-  GridFilterInputValueProps,
   DataGrid,
   GridFilterItem,
   GridFilterOperator,
 } from '@mui/x-data-grid';
-import { useDemoData } from '@mui/x-data-grid-generator';
-import { Slider, SliderProps } from '@mui/material';
+import RangeInputValue from './RangeInputValue';
 
-
-function RatingInputValue(props: GridFilterInputValueProps) {
-  const { item, applyValue, focusElementRef, minValue, maxValue, value1, setValue1 } = props;
-
-  const minDistance = 10;
-  const ratingRef: React.Ref<any> = React.useRef(null);
-
-  React.useImperativeHandle(focusElementRef, () => ({
-    focus: () => {
-      ratingRef.current
-        .focus();
-    },
-  }));
-
-
-  const handleFilterChange: SliderProps['onChange'] = (event: Event, newValue: number | number[], activeThumb: number) => {
-
-    if (!Array.isArray(newValue)) {
-      return;
-    }
-
-    if (newValue[1] - newValue[0] < minDistance) {
-      if (activeThumb === 0) {
-        const clamped = Math.min(newValue[0], 100 - minDistance);
-        setValue1([clamped, clamped + minDistance]);
-      } else {
-        const clamped = Math.max(newValue[1], minDistance);
-        setValue1([clamped - minDistance, clamped]);
-      }
-    } else {
-      setValue1(newValue as number[]);
-    }
-    applyValue({ ...item, value: newValue });
-
-  };
-
-  return (
-    <Box
-      sx={{
-        display: 'inline-flex',
-        flexDirection: 'column',
-        alignItems: 'center',
-        height: 68,
-        pl: '20px',
-      }}
-    >
-      <Slider
-        size="small"
-        ref={ratingRef}
-        placeholder="Filter value"
-        value={value1}
-        min={minValue}
-        max={maxValue}
-        onChange={handleFilterChange}
-      />
-      <Box >
-        {value1[0]} - {value1[1]}
-      </Box>
-
-    </Box>
-  );
-}
-
-
-export default function MyUi() {
+export default function Table() {
 
   const [maxValue, setMaxValue] = React.useState<number>(0);
   const [minValue, setMinValue] = React.useState<number>(0);
   const [value1, setValue1] = React.useState<number[]>([minValue || 0, maxValue || 0]);
-  const ratingOnlyOperators: GridFilterOperator[] = [
+  const rangeOnlyOperators: GridFilterOperator[] = [
     {
       label: 'Above',
       value: 'above',
@@ -99,7 +31,7 @@ export default function MyUi() {
           return Number(params.value) >= Number(filterItem.value[0]) && Number(params.value) <= Number(filterItem.value[1]);
         };
       },
-      InputComponent: RatingInputValue,
+      InputComponent: RangeInputValue,
       InputComponentProps: { type: 'number', 'minValue': minValue, 'maxValue': maxValue, 'value1': value1, 'setValue1': setValue1 },
     },
   ];
@@ -149,13 +81,12 @@ export default function MyUi() {
         col.field === 'age'
           ? {
             ...col,
-            filterOperators: ratingOnlyOperators,
+            filterOperators: rangeOnlyOperators,
           }
           : col,
       ),
     [fakeColumns],
   );
-
 
   return (
     <div style={{ height: 400, width: '100%' }}>
