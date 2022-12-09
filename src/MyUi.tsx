@@ -12,8 +12,7 @@ import { Slider, SliderProps } from '@mui/material';
 
 
 function RatingInputValue(props: GridFilterInputValueProps) {
-  const [value1, setValue1] = React.useState<number[]>([20, 37]);
-  const { item, applyValue, focusElementRef, minValue, maxValue } = props;
+  const { item, applyValue, focusElementRef, minValue, maxValue, value1, setValue1 } = props;
 
   const minDistance = 10;
   const ratingRef: React.Ref<any> = React.useRef(null);
@@ -21,7 +20,6 @@ function RatingInputValue(props: GridFilterInputValueProps) {
   React.useImperativeHandle(focusElementRef, () => ({
     focus: () => {
       ratingRef.current
-        .querySelector(`input[value="${Number(item.value) || ''}"]`)
         .focus();
     },
   }));
@@ -76,11 +74,11 @@ function RatingInputValue(props: GridFilterInputValueProps) {
 }
 
 
-
 export default function MyUi() {
 
   const [maxValue, setMaxValue] = React.useState<number>(0);
   const [minValue, setMinValue] = React.useState<number>(0);
+  const [value1, setValue1] = React.useState<number[]>([minValue || 0, maxValue || 0]);
   const ratingOnlyOperators: GridFilterOperator[] = [
     {
       label: 'Above',
@@ -96,12 +94,13 @@ export default function MyUi() {
         }
 
         return (params): boolean => {
+          console.log(filterItem.value);
 
           return Number(params.value) >= Number(filterItem.value[0]) && Number(params.value) <= Number(filterItem.value[1]);
         };
       },
       InputComponent: RatingInputValue,
-      InputComponentProps: { type: 'number', 'minValue': minValue, 'maxValue': maxValue },
+      InputComponentProps: { type: 'number', 'minValue': minValue, 'maxValue': maxValue, 'value1': value1, 'setValue1': setValue1 },
     },
   ];
 
@@ -130,7 +129,6 @@ export default function MyUi() {
   ];
   let ages: number[] = []
 
-
   rows.forEach(row => {
 
     if (row.age != undefined) ages.push(row.age);
@@ -140,11 +138,10 @@ export default function MyUi() {
   const min = Math.min(...ages)
 
   React.useEffect(() => {
-
-
     setMinValue(min);
     setMaxValue(max);
-  }, [rows])
+    setValue1([min, max])
+  }, [])
 
   const columns = React.useMemo(
     () =>
@@ -159,6 +156,7 @@ export default function MyUi() {
     [fakeColumns],
   );
 
+
   return (
     <div style={{ height: 400, width: '100%' }}>
       <DataGrid
@@ -171,7 +169,6 @@ export default function MyUi() {
                 {
                   id: 1,
                   columnField: 'age',
-                  value: '3',
                   operatorValue: 'above',
                 },
               ],
