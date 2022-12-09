@@ -10,22 +10,24 @@ import {
 import { useDemoData } from '@mui/x-data-grid-generator';
 import { Slider, SliderProps } from '@mui/material';
 
+
 function RatingInputValue(props: GridFilterInputValueProps) {
   const [value1, setValue1] = React.useState<number[]>([20, 37]);
-  const { item, applyValue, focusElementRef } = props;
+  const { item, applyValue, focusElementRef, minValue, maxValue } = props;
+
   const minDistance = 10;
-  // const ratingRef: React.Ref<any> = React.useRef(null);
-  // React.useImperativeHandle(focusElementRef, () => ({
-  //   focus: () => {
-  //     ratingRef.current
-  //       .querySelector(`input[value="${Number(item.value) || ''}"]`)
-  //       .focus();
-  //   },
-  // }));
+  const ratingRef: React.Ref<any> = React.useRef(null);
+
+  React.useImperativeHandle(focusElementRef, () => ({
+    focus: () => {
+      ratingRef.current
+        .querySelector(`input[value="${Number(item.value) || ''}"]`)
+        .focus();
+    },
+  }));
 
 
   const handleFilterChange: SliderProps['onChange'] = (event: Event, newValue: number | number[], activeThumb: number) => {
-
 
     if (!Array.isArray(newValue)) {
       return;
@@ -50,58 +52,58 @@ function RatingInputValue(props: GridFilterInputValueProps) {
     <Box
       sx={{
         display: 'inline-flex',
-        flexDirection: 'row',
+        flexDirection: 'column',
         alignItems: 'center',
-        height: 48,
+        height: 68,
         pl: '20px',
       }}
     >
       <Slider
         size="small"
-        // ref={ratingRef}
+        ref={ratingRef}
         placeholder="Filter value"
-        valueLabelDisplay="auto"
         value={value1}
-        min={10}
+        min={minValue}
+        max={maxValue}
         onChange={handleFilterChange}
       />
+      <Box >
+        {value1[0]} - {value1[1]}
+      </Box>
 
     </Box>
   );
 }
 
-const ratingOnlyOperators: GridFilterOperator[] = [
-  {
-    label: 'Above',
-    value: 'above',
-    getApplyFilterFn: (filterItem: GridFilterItem) => {
-
-
-      if (
-        !filterItem.columnField ||
-        !filterItem.value ||
-        !filterItem.operatorValue
-      ) {
-        return null;
-      }
-
-      return (params): boolean => {
-
-        return Number(params.value) > Number(filterItem.value[0]) && Number(params.value) < Number(filterItem.value[1]);
-      };
-    },
-    InputComponent: RatingInputValue,
-    InputComponentProps: { type: 'number', 'max': 120 },
-  },
-];
 
 
 export default function MyUi() {
 
-  let minValue: number = 0;
-  let maxValue: number = 0;
+  const [maxValue, setMaxValue] = React.useState<number>(0);
+  const [minValue, setMinValue] = React.useState<number>(0);
+  const ratingOnlyOperators: GridFilterOperator[] = [
+    {
+      label: 'Above',
+      value: 'above',
+      getApplyFilterFn: (filterItem: GridFilterItem) => {
 
-  const [value1, setValue1] = React.useState<number[]>([20, 37]);
+        if (
+          !filterItem.columnField ||
+          !filterItem.value ||
+          !filterItem.operatorValue
+        ) {
+          return null;
+        }
+
+        return (params): boolean => {
+
+          return Number(params.value) >= Number(filterItem.value[0]) && Number(params.value) <= Number(filterItem.value[1]);
+        };
+      },
+      InputComponent: RatingInputValue,
+      InputComponentProps: { type: 'number', 'minValue': minValue, 'maxValue': maxValue },
+    },
+  ];
 
   const fakeColumns = [
     { field: "id", headerName: "ID", width: 70 },
@@ -126,14 +128,23 @@ export default function MyUi() {
     { id: 8, lastName: "Frances", firstName: "Rossini", age: 36 },
     { id: 9, lastName: "Roxie", firstName: "Harvey", age: 65 }
   ];
+  let ages: number[] = []
 
 
-  rows.map((row) => {
-    if (row.age !== null) {
+  rows.forEach(row => {
 
-    }
+    if (row.age != undefined) ages.push(row.age);
 
-  })
+  });
+  const max = Math.max(...ages)
+  const min = Math.min(...ages)
+
+  React.useEffect(() => {
+
+
+    setMinValue(min);
+    setMaxValue(max);
+  }, [rows])
 
   const columns = React.useMemo(
     () =>
